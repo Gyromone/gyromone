@@ -11,10 +11,11 @@ async fn hello_world(_req: Request<Body>) -> Result<Response<Body>, Infallible> 
 
 #[tokio::main]
 async fn main() {
+    let config = config::parse_config();
+
     // We'll bind to 127.0.0.1:3000
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([127, 0, 0, 1], config.server.port));
         
-    config::print_config();
 
     // A `Service` is needed for every connection, so this
     // creates one from our `hello_world` function.

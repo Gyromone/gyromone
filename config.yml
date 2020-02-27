@@ -1,2 +1,2 @@
-foo:
-  bar: hello
+server:
+  port: 3000
