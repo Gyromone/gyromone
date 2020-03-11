@@ -21,6 +21,6 @@ pub fn parse_config() -> SystemConfig {
     contents
 }
 
-pub fn print_config() {
-    println!("{:?}", parse_config());
-}
+//pub fn print_config() {
+//println!("{:?}", parse_config());
+//}
