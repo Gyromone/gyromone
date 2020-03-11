@@ -1,19 +1,32 @@
+#[macro_use]
+extern crate slog;
+extern crate slog_async;
+
+extern crate slog_term;
+
 use std::convert::Infallible;
 use std::net::SocketAddr;
 use hyper::{Body, Request, Response, Server};
 use hyper::service::{make_service_fn, service_fn};
 use routes::root;
+use log::Logger;
 
 mod config;
 mod routes;
-
+mod log;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let config = config::parse_config();
+    let logger = Logger::new();
 
-    // We'll bind to 127.0.0.1:3000
     let addr = SocketAddr::from(([127, 0, 0, 1], config.server.port));
+
+    slog::info!(
+        logger.source_logger,
+        "{}", config.server.port.to_string();
+        "feature" => "main"
+    );
         
 
     let service = make_service_fn(|_| async {
