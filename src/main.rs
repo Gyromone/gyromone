@@ -13,6 +13,7 @@ use log::Logger;
 mod config;
 mod routes;
 mod log;
+mod constants;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {

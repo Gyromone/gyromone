@@ -14,3 +14,5 @@ serde_yaml = "0.8"
 slog = { version = "2.5.2" , features = ["max_level_trace", "release_max_level_warn"] }
 slog-term = "2.5.0"
 slog-async = "2.4.0"
+base64 = "0.12.0"
+rust-crypto = "0.2.36"

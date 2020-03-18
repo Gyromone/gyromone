@@ -1,2 +1,4 @@
 server:
   port: 3000
+line_chat:
+  secret: abc

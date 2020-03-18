@@ -9,8 +9,13 @@ pub struct ServerConfig {
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct LineChatConfig {
+    pub secret: String,
+}
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct SystemConfig {
     pub server: ServerConfig,
+    pub line_chat: LineChatConfig,
 }
 
 pub fn parse_config() -> SystemConfig {
