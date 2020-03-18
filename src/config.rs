@@ -18,12 +18,18 @@ pub struct SystemConfig {
     pub line_chat: LineChatConfig,
 }
 
-pub fn parse_config() -> SystemConfig {
-    let f = File::open("./config.yml").expect("can read the config file");
-    let reader = BufReader::new(f);
+impl SystemConfig {
+    fn new() -> SystemConfig {
+        let f = File::open("./config.yml").expect("can read the config file");
+        let reader = BufReader::new(f);
 
-    let contents: SystemConfig = from_reader(reader).expect("not a system config");
-    contents
+        let contents: SystemConfig = from_reader(reader).expect("not a system config");
+        contents
+    }
+}
+
+lazy_static! {
+    pub static ref SYSTEM_CONFIG: SystemConfig = { SystemConfig::new() };
 }
 
 //pub fn print_config() {

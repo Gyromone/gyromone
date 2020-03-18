@@ -1,4 +1,4 @@
 server:
   port: 3000
 line_chat:
-  secret: abc
+  secret: 116444d7295f4db103a6d509353f9277

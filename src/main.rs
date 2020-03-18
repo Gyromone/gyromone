@@ -1,8 +1,11 @@
 #[macro_use]
 extern crate slog;
 extern crate slog_async;
+#[macro_use]
+extern crate lazy_static;
 
 extern crate slog_term;
+extern crate sha2;
 
 use std::net::SocketAddr;
 use hyper::{Server};
@@ -17,14 +20,14 @@ mod constants;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let config = config::parse_config();
+    let conf = &*config::SYSTEM_CONFIG;
     let logger = Logger::new();
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], config.server.port));
+    let addr = SocketAddr::from(([127, 0, 0, 1], conf.server.port));
 
     slog::info!(
         logger.source_logger,
-        "{}", config.server.port.to_string();
+        "{}", conf.server.port.to_string();
         "feature" => "main"
     );
         
