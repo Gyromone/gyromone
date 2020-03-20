@@ -62,6 +62,6 @@ pub async fn handler(_req: Request<Body>) -> Result<Response<Body>, hyper::Error
     
     match is_valid {
         true => Ok(response::line_chat_resp_builder(Ok(()))),
-        false => Ok(response::line_chat_resp_builder(Err(Errors::GeneralSystemError)))
+        false => Ok(response::line_chat_resp_builder(Err(Errors::GeneralUnauthorized)))
     }
 }
