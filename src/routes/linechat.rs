@@ -3,10 +3,12 @@ use serde_json::from_slice;
 use hyper::{Body, Request, Response};
 use sha2::Sha256;
 use base64;
-use crate::constants;
-use crate::config;
 use hmac::{Hmac, Mac};
 use std::str;
+use crate::constants;
+use crate::config;
+use crate::response;
+use crate::response::errors::Errors;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Message {
@@ -59,7 +61,7 @@ pub async fn handler(_req: Request<Body>) -> Result<Response<Body>, hyper::Error
     let is_valid = verify(&bytes, signature, secret.as_bytes());
     
     match is_valid {
-        true => Ok(Response::new("valid line message".into())),
-        false => Ok(Response::new("invalid line message".into()))
+        true => Ok(response::line_chat_resp_builder(Ok(()))),
+        false => Ok(response::line_chat_resp_builder(Err(Errors::GeneralSystemError)))
     }
 }
