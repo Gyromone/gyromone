@@ -51,7 +51,6 @@ pub async fn handler(_req: Request<Body>) -> Result<Response<Body>, hyper::Error
     let (parts, _req_body) = _req.into_parts();
     let bytes = hyper::body::to_bytes(_req_body).await.unwrap();
     let s: LineReqBody = from_slice(&bytes).unwrap();
-    println!("{:?}", s);
 
     let header = parts.headers;
     
