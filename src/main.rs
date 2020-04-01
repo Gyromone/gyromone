@@ -10,8 +10,9 @@ extern crate sha2;
 use std::net::SocketAddr;
 use hyper::{Server};
 use hyper::service::{make_service_fn, service_fn};
-use routes::root;
-use log::Logger;
+
+use crate::routes::root;
+use crate::log::Logger;
 
 mod config;
 mod routes;
