@@ -23,11 +23,12 @@ mod response;
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let conf = &*config::SYSTEM_CONFIG;
     let logger = Logger::new();
+    let local_logger = logger.source_logger.new(o!("feature" => "main"));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], conf.server.port));
 
     slog::info!(
-        logger.source_logger,
+        local_logger,
         "{}", conf.server.port.to_string();
         "feature" => "main"
     );
