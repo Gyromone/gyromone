@@ -3,48 +3,38 @@ extern crate slog;
 extern crate slog_async;
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate gotham_derive;
 
-extern crate slog_term;
+extern crate gotham;
+extern crate hyper;
 extern crate sha2;
+extern crate slog_term;
 
 use std::net::SocketAddr;
-use hyper::{Server};
-use hyper::service::{make_service_fn, service_fn};
 
-use crate::routes::root;
 use crate::log::Logger;
+use crate::routes::root;
 
 mod config;
-mod routes;
-mod log;
 mod constants;
+mod log;
 mod response;
+mod routes;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+fn main() {
     let conf = &*config::SYSTEM_CONFIG;
     let logger = Logger::new();
     let local_logger = logger.source_logger.new(o!("feature" => "main"));
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], conf.server.port));
+    let addr = format!("127.0.0.1:{}", conf.server.port);
 
     slog::info!(
         local_logger,
         "{}", conf.server.port.to_string();
         "feature" => "main"
     );
-        
 
-    let service = make_service_fn(|_| async {
-        // service_fn converts our function into a `Service`
-        Ok::<_, hyper::Error>(service_fn(root::handler))
-    });
-
-    let server = Server::bind(&addr).serve(service);
-
-    server.await?;
-
-    Ok(())
+    println!("Listening for requests at http://{}", addr);
+    gotham::start(addr, root::router());
 }
-
-
