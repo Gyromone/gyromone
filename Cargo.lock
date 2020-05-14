@@ -509,6 +509,7 @@ name = "gyromone"
 version = "0.1.0"
 dependencies = [
  "base64 0.12.0",
+ "futures",
  "gotham",
  "gotham_derive",
  "hmac",

@@ -3,15 +3,12 @@ extern crate slog;
 extern crate slog_async;
 #[macro_use]
 extern crate lazy_static;
-#[macro_use]
 extern crate gotham_derive;
 
 extern crate gotham;
 extern crate hyper;
 extern crate sha2;
 extern crate slog_term;
-
-use std::net::SocketAddr;
 
 use crate::log::Logger;
 use crate::routes::root;
