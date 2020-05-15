@@ -1,27 +1,41 @@
-use hyper::{Body, Response};
-use serde_json;
+use gotham::handler::IntoResponse;
+use gotham::state::State;
+use hyper::{Body, Response, StatusCode};
+use serde::ser::Serialize;
+use serde_json::to_vec;
 
-pub fn line_chat_resp_builder(raw_resp: Result<(), errors::Errors>) -> Response<Body> {
-    match raw_resp {
-        Ok(()) => {
-            let payload = success::Success::<()> { payload: () };
-            Response::builder()
-                .body(Body::from(serde_json::to_string(&payload).unwrap()))
-                .unwrap()
-        }
-        Err(e) => {
-            let errors::ErrorParts {
-                status_code,
-                payload,
-            } = e.to_parts();
+pub struct SuccessResponse<T: Serialize> {
+    pub status_code: StatusCode,
+    pub value: T,
+}
 
-            Response::builder()
-                .status(status_code)
-                .body(Body::from(serde_json::to_string(&payload).unwrap()))
-                .unwrap()
+impl<T: Serialize> IntoResponse for SuccessResponse<T> {
+    fn into_response(self, _state: &State) -> Response<Body> {
+        match to_vec(&self.value) {
+            Ok(v) => Response::builder()
+                .status(&self.status_code)
+                .body(v.into())
+                .unwrap(),
+            Err(e) => Response::builder()
+                .status(&self.status_code)
+                .body(String::from("error!!!").into())
+                .unwrap(),
         }
     }
 }
 
+//impl<T: Serialize> SuccessFuture<_, T> {
+//fn into_future_result(self) -> FutureResult<(&State, Response<Body>), (&State, HandlerError)> {
+//match to_vec(&self.value) {
+//Ok(v) => future::ok((
+//self.state,
+//Response::builder()
+//.status(StatusCode::OK)
+//.body(v.into())
+//.unwrap(),
+//)),
+//}
+//}
+//}
+
 pub mod errors;
-pub mod success;

@@ -1,9 +1,10 @@
 use crate::config;
 use crate::constants;
 use crate::response::errors::Errors;
+use crate::response::SuccessResponse;
 use base64;
 use futures::{future, Future, Stream};
-use gotham::handler::{HandlerFuture, IntoHandlerError};
+use gotham::handler::{HandlerFuture, IntoHandlerError, IntoResponse};
 use gotham::helpers::http::response::create_empty_response;
 use gotham::state::{FromState, State};
 use hmac::{Hmac, Mac};
@@ -32,6 +33,11 @@ struct Event {
 struct LineReqBody {
     destination: Option<String>,
     events: Vec<Event>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct LineResp {
+    message: String,
 }
 
 fn verify(message: &[u8], code: &str, key: &[u8]) -> bool {
@@ -68,8 +74,16 @@ pub fn handler(mut state: State) -> Box<HandlerFuture> {
 
                 match is_valid {
                     true => {
-                        let res = create_empty_response(&state, StatusCode::OK);
-                        future::ok((state, res))
+                        let success = SuccessResponse {
+                            status_code: StatusCode::OK,
+                            value: LineResp {
+                                message: String::from("success!"),
+                            },
+                        };
+                        let resp = success.into_response(&state);
+                        future::ok((state, resp))
+                        //let res = create_empty_response(&state, StatusCode::OK);
+                        //future::ok((state, res))
                     }
                     false => future::err((state, Errors::GeneralUnauthorized.into_handler_error())),
                 }
