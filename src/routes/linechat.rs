@@ -1,7 +1,7 @@
 use crate::config;
 use crate::constants;
 use crate::response::errors::Errors;
-use crate::response::SuccessResponse;
+use crate::response::successes::SuccessResponse;
 use base64;
 use futures::{future, Future, Stream};
 use gotham::handler::{HandlerFuture, IntoHandlerError};
