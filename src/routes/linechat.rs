@@ -82,7 +82,7 @@ pub fn handler(mut state: State) -> Box<HandlerFuture> {
                         let resp = success.into_future_result(state);
                         resp
                     }
-                    false => future::err((state, Errors::GeneralUnauthorized.into_handler_error())),
+                    false => Errors::GeneralUnauthorized.into_future_result(state),
                 }
             }
             Err(e) => future::err((state, e.into_handler_error())),

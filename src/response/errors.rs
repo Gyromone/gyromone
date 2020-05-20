@@ -1,9 +1,10 @@
-use gotham::handler::{HandlerError, IntoHandlerError};
-use hyper::StatusCode;
+use futures::future;
+use futures::future::FutureResult;
+use gotham::handler::{HandlerError, IntoHandlerError, IntoResponse};
+use gotham::state::State;
+use hyper::{Body, Response, StatusCode};
 use serde::{Deserialize, Serialize};
-use std::error::Error;
-use std::fmt;
-use std::fmt::Display;
+use serde_json::to_vec;
 
 pub enum Errors {
     GeneralSystemError,
@@ -23,31 +24,31 @@ pub struct ErrorParts {
     pub payload: ErrorPayload,
 }
 
-impl Display for ErrorPayload {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "({}, {})", self.code, self.message)
+impl Errors {
+    pub fn into_future_result(
+        self,
+        _state: State,
+    ) -> FutureResult<(State, Response<Body>), (State, HandlerError)> {
+        let resp = self.into_response(&_state);
+        future::ok((_state, resp))
     }
-}
 
-impl Error for ErrorPayload {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        Some(self)
-    }
-}
-
-impl IntoHandlerError for Errors {
-    fn into_handler_error(self) -> HandlerError {
+    fn into_response(self, state: &State) -> Response<Body> {
         let ErrorParts {
             status_code,
             payload,
         } = self.to_parts();
 
-        payload.into_handler_error().with_status(status_code)
-
-        //HandlerError {
-        //status_code: status_code,
-        //cause: Box::new(payload),
-        //}
+        match to_vec(&payload) {
+            Ok(v) => {
+                let resp = Response::builder()
+                    .status(status_code)
+                    .body(v.into())
+                    .unwrap();
+                resp
+            }
+            Err(_) => Errors::GeneralSystemError.into_response(state),
+        }
     }
 }
 
