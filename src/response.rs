@@ -3,23 +3,25 @@ use gotham::state::State;
 use hyper::{Body, Response, StatusCode};
 use serde::ser::Serialize;
 use serde_json::to_vec;
+use std::error::Error;
 
 pub struct SuccessResponse<T: Serialize> {
     pub status_code: StatusCode,
     pub value: T,
 }
 
-impl<T: Serialize> IntoResponse for SuccessResponse<T> {
-    fn into_response(self, _state: &State) -> Response<Body> {
+impl<T: Serialize> SuccessResponse<T> {
+    pub fn into_result_response(self, _state: &State) -> Result<Response<Body>, Box<Error>> {
         match to_vec(&self.value) {
-            Ok(v) => Response::builder()
-                .status(&self.status_code)
-                .body(v.into())
-                .unwrap(),
-            Err(e) => Response::builder()
-                .status(&self.status_code)
-                .body(String::from("error!!!").into())
-                .unwrap(),
+            Ok(v) => {
+                let resp = Response::builder()
+                    .status(&self.status_code)
+                    .body(v.into())
+                    .unwrap();
+
+                Ok(resp)
+            }
+            Err(e) => Err(Box::new(e)),
         }
     }
 }

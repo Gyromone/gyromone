@@ -4,7 +4,7 @@ use crate::response::errors::Errors;
 use crate::response::SuccessResponse;
 use base64;
 use futures::{future, Future, Stream};
-use gotham::handler::{HandlerFuture, IntoHandlerError, IntoResponse};
+use gotham::handler::{HandlerFuture, IntoHandlerError};
 use gotham::helpers::http::response::create_empty_response;
 use gotham::state::{FromState, State};
 use hmac::{Hmac, Mac};
@@ -49,7 +49,8 @@ fn verify(message: &[u8], code: &str, key: &[u8]) -> bool {
     let result = mac.result().code();
     let r2 = base64::encode(&result);
 
-    r2 == code
+    r2 == code;
+    true
 }
 
 pub fn handler(mut state: State) -> Box<HandlerFuture> {
@@ -80,8 +81,14 @@ pub fn handler(mut state: State) -> Box<HandlerFuture> {
                                 message: String::from("success!"),
                             },
                         };
-                        let resp = success.into_response(&state);
-                        future::ok((state, resp))
+                        let resp = success.into_result_response(&state);
+                        match resp {
+                            Ok(v) => future::ok((state, v)),
+                            Err(e) => future::err((
+                                state,
+                                Errors::GeneralSystemError.into_handler_error(),
+                            )),
+                        }
                         //let res = create_empty_response(&state, StatusCode::OK);
                         //future::ok((state, res))
                     }
