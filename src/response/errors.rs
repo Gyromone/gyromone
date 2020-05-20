@@ -1,7 +1,6 @@
 use gotham::handler::{HandlerError, IntoHandlerError};
 use hyper::StatusCode;
 use serde::{Deserialize, Serialize};
-use serde_json;
 use std::error::Error;
 use std::fmt;
 use std::fmt::Display;

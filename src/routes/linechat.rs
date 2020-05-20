@@ -5,12 +5,11 @@ use crate::response::SuccessResponse;
 use base64;
 use futures::{future, Future, Stream};
 use gotham::handler::{HandlerFuture, IntoHandlerError};
-use gotham::helpers::http::response::create_empty_response;
 use gotham::state::{FromState, State};
 use hmac::{Hmac, Mac};
 use hyper::{body, Body, HeaderMap, StatusCode};
 use serde::{Deserialize, Serialize};
-use serde_json::from_slice;
+//use serde_json::from_slice;
 use sha2::Sha256;
 use std::str;
 
@@ -49,8 +48,7 @@ fn verify(message: &[u8], code: &str, key: &[u8]) -> bool {
     let result = mac.result().code();
     let r2 = base64::encode(&result);
 
-    r2 == code;
-    true
+    r2 == code
 }
 
 pub fn handler(mut state: State) -> Box<HandlerFuture> {
@@ -62,9 +60,9 @@ pub fn handler(mut state: State) -> Box<HandlerFuture> {
                 let conf = &*config::SYSTEM_CONFIG;
                 let secret = &conf.line_chat.secret;
                 let bytes = body::Chunk::into_bytes(valid_body);
-                let s: LineReqBody = from_slice(&bytes).unwrap();
+                //let s: LineReqBody = from_slice(&bytes).unwrap();
 
-                // handle error, no unwrap here
+                // FIXME: handle error, no unwrap here
                 let signature = headers
                     .get(constants::LINE_SIGNATURE_KEY)
                     .unwrap()
@@ -81,23 +79,11 @@ pub fn handler(mut state: State) -> Box<HandlerFuture> {
                                 message: String::from("success!"),
                             },
                         };
-                        let resp = success.into_result_response(&state);
-                        match resp {
-                            Ok(v) => future::ok((state, v)),
-                            Err(e) => future::err((
-                                state,
-                                Errors::GeneralSystemError.into_handler_error(),
-                            )),
-                        }
-                        //let res = create_empty_response(&state, StatusCode::OK);
-                        //future::ok((state, res))
+                        let resp = success.into_future_result(state);
+                        resp
                     }
                     false => future::err((state, Errors::GeneralUnauthorized.into_handler_error())),
                 }
-                //let body_content = String::from_utf8(valid_body.to_vec()).unwrap();
-                //println!("Body: {}", body_content);
-                //let res = create_empty_response(&state, StatusCode::OK);
-                //future::ok((state, res))
             }
             Err(e) => future::err((state, e.into_handler_error())),
         });

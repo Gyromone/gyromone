@@ -1,4 +1,6 @@
-use gotham::handler::IntoResponse;
+use futures::future;
+use futures::future::FutureResult;
+use gotham::handler::{HandlerError, IntoHandlerError};
 use gotham::state::State;
 use hyper::{Body, Response, StatusCode};
 use serde::ser::Serialize;
@@ -11,7 +13,7 @@ pub struct SuccessResponse<T: Serialize> {
 }
 
 impl<T: Serialize> SuccessResponse<T> {
-    pub fn into_result_response(self, _state: &State) -> Result<Response<Body>, Box<Error>> {
+    fn into_result_response(self, _state: &State) -> Result<Response<Body>, Box<dyn Error>> {
         match to_vec(&self.value) {
             Ok(v) => {
                 let resp = Response::builder()
@@ -24,20 +26,19 @@ impl<T: Serialize> SuccessResponse<T> {
             Err(e) => Err(Box::new(e)),
         }
     }
+    pub fn into_future_result(
+        self,
+        _state: State,
+    ) -> FutureResult<(State, Response<Body>), (State, HandlerError)> {
+        let resp_result = self.into_result_response(&_state);
+        match resp_result {
+            Ok(resp) => future::ok((_state, resp)),
+            Err(_) => future::err((
+                _state,
+                errors::Errors::GeneralSystemError.into_handler_error(),
+            )),
+        }
+    }
 }
-
-//impl<T: Serialize> SuccessFuture<_, T> {
-//fn into_future_result(self) -> FutureResult<(&State, Response<Body>), (&State, HandlerError)> {
-//match to_vec(&self.value) {
-//Ok(v) => future::ok((
-//self.state,
-//Response::builder()
-//.status(StatusCode::OK)
-//.body(v.into())
-//.unwrap(),
-//)),
-//}
-//}
-//}
 
 pub mod errors;
