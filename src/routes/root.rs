@@ -23,7 +23,7 @@ pub fn router() -> Router {
 
     build_simple_router(|route| {
         route.get_or_head("/").to(hello_world);
-        route.post("/linechat").to(linechat::handler);
+        route.post("/linechat").to(linechat::post_handler);
     })
 }
 

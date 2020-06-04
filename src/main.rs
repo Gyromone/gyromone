@@ -22,14 +22,13 @@ mod routes;
 fn main() {
     let conf = &*config::SYSTEM_CONFIG;
     let logger = Logger::new();
-    let local_logger = logger.source_logger.new(o!("feature" => "main"));
+    let local_logger = logger.source_logger.new(o!("func" => "main"));
 
     let addr = format!("127.0.0.1:{}", conf.server.port);
 
     slog::info!(
         local_logger,
         "{}", conf.server.port.to_string();
-        "feature" => "main"
     );
 
     println!("Listening for requests at http://{}", addr);

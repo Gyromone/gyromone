@@ -1,7 +1,7 @@
 use crate::response::errors;
 use futures::future;
 use futures::future::FutureResult;
-use gotham::handler::{HandlerError, IntoHandlerError};
+use gotham::handler::HandlerError;
 use gotham::state::State;
 use hyper::{Body, Response, StatusCode};
 use serde::ser::Serialize;

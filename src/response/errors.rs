@@ -1,6 +1,6 @@
 use futures::future;
 use futures::future::FutureResult;
-use gotham::handler::{HandlerError, IntoHandlerError, IntoResponse};
+use gotham::handler::HandlerError;
 use gotham::state::State;
 use hyper::{Body, Response, StatusCode};
 use serde::{Deserialize, Serialize};
