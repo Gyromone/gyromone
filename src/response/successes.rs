@@ -16,14 +16,10 @@ pub struct SuccessResponse<T: Serialize> {
 impl<T: Serialize> SuccessResponse<T> {
     fn into_result_response(self, _state: &State) -> Result<Response<Body>, Box<dyn Error>> {
         match to_vec(&self.value) {
-            Ok(v) => {
-                let resp = Response::builder()
-                    .status(&self.status_code)
-                    .body(v.into())
-                    .unwrap();
-
-                Ok(resp)
-            }
+            Ok(v) => match Response::builder().status(&self.status_code).body(v.into()) {
+                Ok(resp) => Ok(resp),
+                Err(e) => Err(Box::new(e)),
+            },
             Err(e) => Err(Box::new(e)),
         }
     }

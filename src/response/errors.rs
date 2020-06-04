@@ -40,13 +40,10 @@ impl Errors {
         } = self.to_parts();
 
         match to_vec(&payload) {
-            Ok(v) => {
-                let resp = Response::builder()
-                    .status(status_code)
-                    .body(v.into())
-                    .unwrap();
-                resp
-            }
+            Ok(v) => match Response::builder().status(status_code).body(v.into()) {
+                Ok(resp) => resp,
+                Err(_) => Errors::GeneralSystemError.into_response(state),
+            },
             Err(_) => Errors::GeneralSystemError.into_response(state),
         }
     }

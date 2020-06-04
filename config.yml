@@ -3,4 +3,4 @@ server:
 line_chat:
   secret: 116444d7295f4db103a6d509353f9277
 debug:
-  should_verify_linechat_secret: true 
+  should_verify_linechat_secret: false 
