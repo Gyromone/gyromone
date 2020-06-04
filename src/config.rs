@@ -12,10 +12,17 @@ pub struct ServerConfig {
 pub struct LineChatConfig {
     pub secret: String,
 }
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct DebugConfig {
+    pub should_verify_linechat_secret: bool,
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct SystemConfig {
     pub server: ServerConfig,
     pub line_chat: LineChatConfig,
+    pub debug: DebugConfig,
 }
 
 impl SystemConfig {

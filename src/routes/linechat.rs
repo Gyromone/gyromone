@@ -59,6 +59,7 @@ pub fn handler(mut state: State) -> Box<HandlerFuture> {
                 let headers = HeaderMap::borrow_from(&state);
                 let conf = &*config::SYSTEM_CONFIG;
                 let secret = &conf.line_chat.secret;
+                let should_verify_linechat_secret = &conf.debug.should_verify_linechat_secret;
                 let bytes = body::Chunk::into_bytes(valid_body);
                 //let s: LineReqBody = from_slice(&bytes).unwrap();
 
@@ -69,7 +70,8 @@ pub fn handler(mut state: State) -> Box<HandlerFuture> {
                     .to_str()
                     .unwrap();
 
-                let is_valid = verify(&bytes, signature, secret.as_bytes());
+                let is_valid =
+                    !should_verify_linechat_secret || verify(&bytes, signature, secret.as_bytes());
 
                 match is_valid {
                     true => {
