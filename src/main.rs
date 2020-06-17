@@ -10,8 +10,8 @@ extern crate hyper;
 extern crate sha2;
 extern crate slog_term;
 
-use crate::log::Logger;
-use crate::routes::root;
+use log::Logger;
+use routes::root;
 
 mod config;
 mod constants;
