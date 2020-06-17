@@ -3,6 +3,7 @@ extern crate slog;
 extern crate slog_async;
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
 extern crate gotham_derive;
 
 extern crate gotham;
@@ -11,7 +12,6 @@ extern crate sha2;
 extern crate slog_term;
 
 use log::Logger;
-use routes::root;
 
 mod config;
 mod constants;
@@ -32,5 +32,5 @@ fn main() {
     );
 
     println!("Listening for requests at http://{}", addr);
-    gotham::start(addr, root::router());
+    gotham::start(addr, routes::router());
 }

@@ -36,7 +36,7 @@ impl SystemConfig {
 }
 
 lazy_static! {
-    pub static ref SYSTEM_CONFIG: SystemConfig = { SystemConfig::new() };
+    pub static ref SYSTEM_CONFIG: SystemConfig = SystemConfig::new();
 }
 
 //pub fn print_config() {
