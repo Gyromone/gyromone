@@ -12,8 +12,10 @@ use hyper::{body, Body, HeaderMap, StatusCode};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use std::str;
+use std::thread;
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct Message {
     id: String,
     #[serde(rename = "type")]
@@ -22,21 +24,32 @@ struct Message {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct Event {
     #[serde(rename = "type")]
     _type: String,
     message: Message,
+    reply_token: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct LineReqBody {
     destination: Option<String>,
     events: Vec<Event>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct LineResp {
     message: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct LineReplyReqBody {
+    reply_token: String,
+    messages: Vec<Message>,
 }
 
 fn verify(message: &[u8], code: &str, key: &[u8]) -> Result<bool, &'static str> {
@@ -89,6 +102,18 @@ pub fn post_handler(mut state: State) -> Box<HandlerFuture> {
 
                 match is_valid {
                     true => {
+                        let req_body: LineReqBody = match serde_json::from_slice(&bytes) {
+                            Ok(body) => body,
+                            Err(err_msg) => {
+                                slog::debug!(
+                                    local_logger,
+                                    "{}", err_msg;
+                                );
+                                return Errors::GeneralSystemError.into_future_result(state);
+                            }
+                        };
+                        println!("{:?}", req_body);
+
                         let success = SuccessResponse {
                             status_code: StatusCode::OK,
                             value: LineResp {
@@ -96,6 +121,9 @@ pub fn post_handler(mut state: State) -> Box<HandlerFuture> {
                             },
                         };
                         let resp = success.into_future_result(state);
+                        thread::spawn(|| {
+                            println!("reply lah");
+                        });
                         resp
                     }
                     false => {
