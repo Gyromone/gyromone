@@ -61,15 +61,13 @@ impl LineReqBody {
             .iter()
             .find(|event| event._type == String::from(TYPE_MESSAGE))
     }
-    //fn borrow_message_reply_token(&self) -> Result<String, &'static str> {
-    //reply_token =  match self.events
-    //.iter()
-    //.find(|event| event._type == TYPE_MESSAGE) {
-    //Some(event) => event,
+}
 
-    //}
-    //Ok()
-    //}
+fn borrow_message_reply_token(event: Option<&Event>) -> Option<&String> {
+    match event {
+        Some(event) => Some(&event.reply_token),
+        None => None,
+    }
 }
 
 fn verify(message: &[u8], code: &str, key: &[u8]) -> Result<bool, &'static str> {
@@ -188,5 +186,20 @@ mod tests {
     fn test_line_req_body_borrow_message_event_no_message_event() {
         let line_req_body: LineReqBody = Default::default();
         assert!(line_req_body.borrow_message_event().is_none())
+    }
+
+    #[test]
+    fn test_borrow_message_reply_token() {
+        let expected_reply_token = String::from("token");
+        let message_event = Event {
+            _type: String::from(TYPE_MESSAGE),
+            reply_token: expected_reply_token,
+            ..Default::default()
+        };
+
+        assert_eq!(
+            borrow_message_reply_token(Some(&message_event)),
+            Some(&String::from("token"))
+        )
     }
 }
