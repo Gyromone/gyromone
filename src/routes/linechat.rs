@@ -183,4 +183,10 @@ mod tests {
             .append(&mut vec![non_message_event, message_event]);
         assert!(line_req_body.borrow_message_event().is_some())
     }
+
+    #[test]
+    fn test_line_req_body_borrow_message_event_no_message_event() {
+        let line_req_body: LineReqBody = Default::default();
+        assert!(line_req_body.borrow_message_event().is_none())
+    }
 }
