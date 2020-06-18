@@ -14,7 +14,9 @@ use sha2::Sha256;
 use std::str;
 use std::thread;
 
-#[derive(Debug, Serialize, Deserialize)]
+const TYPE_MESSAGE: &'static str = "message";
+
+#[derive(PartialEq, Default, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Message {
     id: String,
@@ -23,33 +25,51 @@ struct Message {
     text: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Default, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Event {
     #[serde(rename = "type")]
     _type: String,
-    message: Message,
+    message: Option<Message>,
     reply_token: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Default, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct LineReqBody {
     destination: Option<String>,
     events: Vec<Event>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Default, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct LineResp {
     message: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Default, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct LineReplyReqBody {
     reply_token: String,
     messages: Vec<Message>,
+}
+
+impl LineReqBody {
+    fn borrow_message_event(&self) -> Option<&Event> {
+        println!("borrow_message_event {:?}", self.events);
+        self.events
+            .iter()
+            .find(|event| event._type == String::from(TYPE_MESSAGE))
+    }
+    //fn borrow_message_reply_token(&self) -> Result<String, &'static str> {
+    //reply_token =  match self.events
+    //.iter()
+    //.find(|event| event._type == TYPE_MESSAGE) {
+    //Some(event) => event,
+
+    //}
+    //Ok()
+    //}
 }
 
 fn verify(message: &[u8], code: &str, key: &[u8]) -> Result<bool, &'static str> {
@@ -139,4 +159,28 @@ pub fn post_handler(mut state: State) -> Box<HandlerFuture> {
         });
 
     Box::new(f)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_line_req_body_borrow_message_event() {
+        let non_message_event = Event {
+            _type: String::from("follow"),
+            ..Default::default()
+        };
+
+        let message_event = Event {
+            _type: String::from(TYPE_MESSAGE),
+            ..Default::default()
+        };
+
+        let mut line_req_body: LineReqBody = Default::default();
+        line_req_body
+            .events
+            .append(&mut vec![non_message_event, message_event]);
+        assert!(line_req_body.borrow_message_event().is_some())
+    }
 }
