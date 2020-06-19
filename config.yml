@@ -2,5 +2,9 @@ server:
   port: 3000
 line_chat:
   secret: 116444d7295f4db103a6d509353f9277
+  channel_token: yVs+UxcrUxSWaoPhIH6k0zr+SstHvrFVTIJOOTb8ofQvj4yva5fjiXRq9fWEM2AQldRIBdoKvFb2C7F3TbTr7xXHHDTJMwhEtV4VY2kvkZ0LLXwIKs8gbYCrZrQZeh6AwGNx+Q7ETjHGr+CqTdcujwdB04t89/1O/w1cDnyilFU=
+  reply_endpoint:
+    method: POST
+    endpoint: https://api.line.me/v2/bot/message/reply
 debug:
   should_verify_linechat_secret: false 

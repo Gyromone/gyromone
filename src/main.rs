@@ -8,6 +8,8 @@ extern crate gotham_derive;
 
 extern crate gotham;
 extern crate hyper;
+extern crate hyper_tls;
+
 extern crate sha2;
 extern crate slog_term;
 

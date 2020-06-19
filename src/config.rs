@@ -9,8 +9,16 @@ pub struct ServerConfig {
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct Endpoint {
+    pub method: String,
+    pub endpoint: String,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct LineChatConfig {
     pub secret: String,
+    pub channel_token: String,
+    pub reply_endpoint: Endpoint,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]

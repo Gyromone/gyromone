@@ -8,10 +8,12 @@ use futures::{future, Future, Stream};
 use gotham::handler::{HandlerFuture, IntoHandlerError};
 use gotham::state::{FromState, State};
 use hmac::{Hmac, Mac};
-use hyper::{body, Body, HeaderMap, StatusCode};
+use hyper::header;
+use hyper::rt::run;
+use hyper::{body, Body, HeaderMap, Method, Request, StatusCode};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
-use std::str;
+use std::str::FromStr;
 use std::thread;
 
 const TYPE_MESSAGE: &'static str = "message";
@@ -49,14 +51,21 @@ struct LineResp {
 
 #[derive(PartialEq, Default, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct LineReplyReqBody {
+struct ReplyTextMessage {
+    #[serde(rename = "type")]
+    _type: String,
+    text: String,
+}
+
+#[derive(PartialEq, Default, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ReplyReqBody {
     reply_token: String,
-    messages: Vec<Message>,
+    messages: Vec<ReplyTextMessage>,
 }
 
 impl LineReqBody {
     fn borrow_message_event(&self) -> Option<&Event> {
-        println!("borrow_message_event {:?}", self.events);
         self.events
             .iter()
             .find(|event| event._type == String::from(TYPE_MESSAGE))
@@ -130,7 +139,6 @@ pub fn post_handler(mut state: State) -> Box<HandlerFuture> {
                                 return Errors::GeneralSystemError.into_future_result(state);
                             }
                         };
-                        println!("{:?}", req_body);
 
                         let success = SuccessResponse {
                             status_code: StatusCode::OK,
@@ -139,8 +147,52 @@ pub fn post_handler(mut state: State) -> Box<HandlerFuture> {
                             },
                         };
                         let resp = success.into_future_result(state);
-                        thread::spawn(|| {
-                            println!("reply lah");
+                        thread::spawn(move || {
+                            let reply_endpoint = &conf.line_chat.reply_endpoint;
+                            let token = &conf.line_chat.channel_token;
+                            let method = match Method::from_str(&reply_endpoint.method) {
+                                Ok(m) => m,
+                                Err(err_msg) => {
+                                    return slog::debug!(
+                                        local_logger,
+                                        "{}", err_msg;
+                                    );
+                                }
+                            };
+
+                            let reply_token =
+                                match borrow_message_reply_token(req_body.borrow_message_event()) {
+                                    Some(r) => r,
+                                    None => return (),
+                                };
+                            let reply_body = ReplyReqBody {
+                                reply_token: reply_token.to_string(),
+                                messages: vec![ReplyTextMessage {
+                                    _type: String::from("text"),
+                                    text: String::from("hello from rust"),
+                                }],
+                            };
+                            let reply_bytes = serde_json::to_vec(&reply_body).unwrap();
+                            let https = hyper_tls::HttpsConnector::new(4).unwrap();
+                            let client = hyper::Client::builder().build::<_, hyper::Body>(https);
+                            let req = Request::builder()
+                                .method(method)
+                                .uri(&reply_endpoint.endpoint)
+                                .header(header::CONTENT_TYPE, "application/json")
+                                .header(header::AUTHORIZATION, format!("Bearer {}", token))
+                                .body(Body::from(reply_bytes))
+                                .expect("request builder");
+                            println!("{:?}", req);
+                            let f = client
+                                .request(req)
+                                .map(|_| {
+                                    println!("\n\nDone.");
+                                })
+                                // If there was an error, let the user know...
+                                .map_err(|err| {
+                                    eprintln!("Error {}", err);
+                                });
+                            run(f);
                         });
                         resp
                     }
