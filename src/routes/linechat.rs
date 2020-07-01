@@ -1,5 +1,6 @@
 use crate::config;
 use crate::constants;
+use crate::external;
 use crate::log::Logger;
 use crate::response::errors::Errors;
 use crate::response::successes::SuccessResponse;
@@ -173,8 +174,7 @@ pub fn post_handler(mut state: State) -> Box<HandlerFuture> {
                                 }],
                             };
                             let reply_bytes = serde_json::to_vec(&reply_body).unwrap();
-                            let https = hyper_tls::HttpsConnector::new(4).unwrap();
-                            let client = hyper::Client::builder().build::<_, hyper::Body>(https);
+                            let client = &external::HTTP_CLIENT;
                             let req = Request::builder()
                                 .method(method)
                                 .uri(&reply_endpoint.endpoint)
