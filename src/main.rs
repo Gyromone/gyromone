@@ -15,8 +15,10 @@ extern crate slog_term;
 
 use log::Logger;
 
+mod common;
 mod config;
 mod constants;
+mod external;
 mod log;
 mod response;
 mod routes;
