@@ -47,9 +47,6 @@ impl Errors {
             Err(_) => Errors::GeneralSystemError.into_response(state),
         }
     }
-}
-
-impl Errors {
     pub fn to_parts(&self) -> ErrorParts {
         match &self {
             Errors::GeneralSystemError => ErrorParts {
