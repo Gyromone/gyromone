@@ -135,7 +135,14 @@ pub fn post_handler(mut state: State) -> Box<HandlerFuture> {
                             let reply_token =
                                 match borrow_message_reply_token(req_body.borrow_message_event()) {
                                     Some(r) => r,
-                                    None => return (),
+                                    None => {
+                                        slog::error!(
+                                            local_logger,
+                                            "{}",
+                                            "can't grab the reply token"
+                                        );
+                                        return ();
+                                    }
                                 };
 
                             let f = line::reply_message_future(
