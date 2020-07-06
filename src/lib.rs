@@ -16,19 +16,17 @@ extern crate slog_term;
 use log::Logger;
 
 mod common;
-mod config;
+pub mod config;
 mod constants;
 mod external;
 mod log;
 mod response;
 mod routes;
 
-pub fn run_server() {
+pub fn run_server(addr: String) {
     let conf = &*config::SYSTEM_CONFIG;
     let logger = Logger::new();
     let local_logger = logger.source_logger.new(o!("func" => "main"));
-
-    let addr = format!("127.0.0.1:{}", conf.server.port);
 
     slog::info!(
         local_logger,
@@ -36,5 +34,5 @@ pub fn run_server() {
     );
 
     println!("Listening for requests at http://{}", addr);
-    gotham::start(addr, routes::router());
+    gotham::start(addr, routes::router())
 }
