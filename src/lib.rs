@@ -21,7 +21,7 @@ mod constants;
 mod external;
 mod log;
 mod response;
-mod routes;
+pub mod routes;
 
 pub fn run_server(addr: String) {
     let conf = &*config::SYSTEM_CONFIG;
