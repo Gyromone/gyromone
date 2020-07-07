@@ -8,8 +8,12 @@ if [ $# -ne 0  ]; then
                 (set -x; cargo run)
         elif [ "$flag" == "test" ]; then
                 (set -x; RUST_TEST_THREADS=1 cargo test)
+        elif [ "$flag" == "test_ci" ]; then
+                (set -x; cargo test --verbose)
         elif [ "$flag" == "build" ]; then
                 (set -x; cargo build)
+        elif [ "$flag" == "build_ci" ]; then
+                (set -x; cargo build --verbose)
         elif [ "$flag" == "dummy" ]; then
                 echo "dummy ${BASEDIR}"
         fi
