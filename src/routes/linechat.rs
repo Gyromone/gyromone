@@ -130,7 +130,7 @@ pub fn post_handler(mut state: State) -> Box<HandlerFuture> {
                                     local_logger,
                                     "{}", err_msg;
                                 );
-                                return Errors::GeneralSystemError.into_future_result(state);
+                                return Errors::GeneralWrongRequest.into_future_result(state);
                             }
                         };
 
