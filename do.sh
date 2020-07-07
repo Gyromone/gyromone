@@ -7,7 +7,7 @@ if [ $# -ne 0  ]; then
         if [ "$flag" == "run" ]; then
                 (set -x; cargo run)
         elif [ "$flag" == "test" ]; then
-                (set -x; cargo test)
+                (set -x; RUST_TEST_THREADS=1 cargo test)
         elif [ "$flag" == "build" ]; then
                 (set -x; cargo build)
         elif [ "$flag" == "dummy" ]; then
