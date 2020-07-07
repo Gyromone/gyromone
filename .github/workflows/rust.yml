@@ -10,6 +10,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build
+      shell: bash
       run: sh do.sh build_ci
     - name: Run tests
+      shell: bash
       run: sh do.sh test_ci 
