@@ -547,6 +547,7 @@ dependencies = [
  "hyper",
  "hyper-tls",
  "lazy_static",
+ "mime",
  "serde",
  "serde_json",
  "serde_yaml",

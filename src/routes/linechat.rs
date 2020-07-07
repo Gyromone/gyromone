@@ -94,16 +94,26 @@ pub fn post_handler(mut state: State) -> Box<HandlerFuture> {
                 let should_verify_linechat_secret = &conf.debug.should_verify_linechat_secret;
                 let bytes = body::Chunk::into_bytes(valid_body);
 
-                let signature = match headers.get(constants::LINE_SIGNATURE_KEY).unwrap().to_str() {
+                let signature = match headers
+                    .get(constants::LINE_SIGNATURE_KEY)
+                    .ok_or("fail to get signature header")
+                    .and_then(|key| key.to_str().map_err(|_| "fail to to_str"))
+                {
                     Ok(s) => s,
-                    Err(_) => return Errors::GeneralWrongRequest.into_future_result(state),
+                    Err(err_msg) => {
+                        slog::error!(
+                            local_logger,
+                            "{}", err_msg;
+                        );
+                        return Errors::GeneralUnauthorized.into_future_result(state);
+                    }
                 };
 
                 let is_valid = !should_verify_linechat_secret
                     || match verify(&bytes, signature, secret.as_bytes()) {
                         Ok(iv) => iv,
                         Err(err_msg) => {
-                            slog::debug!(
+                            slog::error!(
                                 local_logger,
                                 "{}", err_msg;
                             );
@@ -116,7 +126,7 @@ pub fn post_handler(mut state: State) -> Box<HandlerFuture> {
                         let req_body: LineReqBody = match serde_json::from_slice(&bytes) {
                             Ok(body) => body,
                             Err(err_msg) => {
-                                slog::debug!(
+                                slog::error!(
                                     local_logger,
                                     "{}", err_msg;
                                 );
