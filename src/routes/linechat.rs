@@ -96,8 +96,8 @@ pub fn post_handler(mut state: State) -> Box<HandlerFuture> {
 
                 let signature = match headers
                     .get(constants::LINE_SIGNATURE_KEY)
-                    .ok_or("fail to get signature header")
-                    .and_then(|key| key.to_str().map_err(|_| "fail to to_str"))
+                    .ok_or(String::from("fail to get signature header"))
+                    .and_then(|key| key.to_str().map_err(|e| format!("error code: {}", e)))
                 {
                     Ok(s) => s,
                     Err(err_msg) => {
