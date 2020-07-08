@@ -13,6 +13,8 @@ use hyper::rt::run;
 use hyper::{body, Body, HeaderMap, StatusCode};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
+
+use std::sync::Arc;
 use std::thread;
 
 const TYPE_MESSAGE: &'static str = "message";
@@ -142,12 +144,16 @@ pub fn post_handler(mut state: State) -> Box<HandlerFuture> {
                         };
                         let resp = success.into_future_result(state);
                         thread::spawn(move || {
+                            let logger = Logger::new();
+                            let local_logger =
+                                Arc::new(logger.source_logger.new(o!("func" => "reply worker")));
+
                             let reply_token =
                                 match borrow_message_reply_token(req_body.borrow_message_event()) {
                                     Some(r) => r,
                                     None => {
                                         slog::error!(
-                                            local_logger,
+                                            local_logger.clone(),
                                             "{}",
                                             "can't grab the reply token"
                                         );
@@ -161,16 +167,26 @@ pub fn post_handler(mut state: State) -> Box<HandlerFuture> {
                             );
 
                             let handled_f = f
-                                .map(|_| {
-                                    let message = "\n\nDone.";
-                                    println!("{}", message);
+                                .map({
+                                    let l_logger = local_logger.clone();
+                                    move |_| {
+                                        let message = "Done.";
+                                        slog::info!(
+                                            l_logger,
+                                            "{}", message;
+                                        );
+                                    }
                                 })
                                 // If there was an error, let the user know...
-                                .map_err(move |err| {
-                                    slog::debug!(
-                                        local_logger,
-                                        "{}", err;
-                                    );
+                                .map_err({
+                                    let l_logger = local_logger.clone();
+
+                                    move |err| {
+                                        slog::debug!(
+                                            l_logger,
+                                            "{}", err;
+                                        );
+                                    }
                                 });
 
                             run(handled_f);
