@@ -10,12 +10,30 @@ use hyper::{header, Body, Method, Request};
 use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Action {
+    #[serde(rename = "type")]
+    _type: String,
+    label: String,
+    text: String,
+}
+
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct QuickReplyObject {
+    #[serde(rename = "type")]
+    _type: String,
+    action: Action,
+}
+
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", untagged)]
 enum Message {
-    ReplyTextMessage {
+    QuickReplyTextObject {
         #[serde(rename = "type")]
         _type: String,
         text: String,
+        quick_reply: Vec<QuickReplyObject>,
     },
 }
 
@@ -53,9 +71,17 @@ pub fn reply_message_future(
 
     let reply_body = ReplyReqBody {
         reply_token: reply_token.to_string(),
-        messages: vec![Message::ReplyTextMessage {
-            _type: String::from("text"),
+        messages: vec![Message::QuickReplyTextObject {
+            _type: "text".to_string(),
             text: reply_text.to_string(),
+            quick_reply: vec![QuickReplyObject {
+                _type: "action".to_string(),
+                action: Action {
+                    _type: "message".to_string(),
+                    label: "try me please!".to_string(),
+                    text: "try_me".to_string(),
+                },
+            }],
         }],
     };
     let reply_bytes = serde_json::to_vec(&reply_body).unwrap();
