@@ -1,8 +1,7 @@
-use std::str::FromStr;
-
 use crate::config;
 use crate::external;
 use crate::log::Logger;
+use std::str::FromStr;
 
 use futures::future;
 use futures::future::Future;
@@ -10,19 +9,21 @@ use hyper::client;
 use hyper::{header, Body, Method, Request};
 use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Default, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct ReplyTextMessage {
-    #[serde(rename = "type")]
-    _type: String,
-    text: String,
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", untagged)]
+enum Message {
+    ReplyTextMessage {
+        #[serde(rename = "type")]
+        _type: String,
+        text: String,
+    },
 }
 
 #[derive(PartialEq, Default, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct ReplyReqBody {
     reply_token: String,
-    messages: Vec<ReplyTextMessage>,
+    messages: Vec<Message>,
 }
 
 pub fn reply_message_future(
@@ -52,7 +53,7 @@ pub fn reply_message_future(
 
     let reply_body = ReplyReqBody {
         reply_token: reply_token.to_string(),
-        messages: vec![ReplyTextMessage {
+        messages: vec![Message::ReplyTextMessage {
             _type: String::from("text"),
             text: reply_text.to_string(),
         }],
