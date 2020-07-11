@@ -1,7 +1,8 @@
+use std::str::FromStr;
+
 use crate::config;
 use crate::external;
 use crate::log::Logger;
-use std::str::FromStr;
 
 use futures::future;
 use futures::future::Future;
