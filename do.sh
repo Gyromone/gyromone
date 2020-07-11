@@ -14,6 +14,10 @@ if [ $# -ne 0  ]; then
                 (set -x; cargo build)
         elif [ "$flag" == "build_ci" ]; then
                 (set -x; cargo build --verbose)
+        elif [ "$flag" == "redis" ]; then
+                (set -x; docker run --name redis-gyromone -d "redis:6.0.5")
+        elif [ "$flag" == "redis-cli" ]; then
+                (set -x; docker exec -it redis-gyromone redis-cli)
         elif [ "$flag" == "dummy" ]; then
                 echo "dummy ${BASEDIR}"
         fi
