@@ -27,10 +27,16 @@ pub struct DebugConfig {
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct RedisConfig {
+    pub uri: String,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct SystemConfig {
     pub server: ServerConfig,
     pub line_chat: LineChatConfig,
     pub debug: DebugConfig,
+    pub redis: RedisConfig,
 }
 
 impl SystemConfig {

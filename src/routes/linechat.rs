@@ -91,7 +91,7 @@ pub fn post_handler(mut state: State) -> Box<HandlerFuture> {
         .then(move |full_body| match full_body {
             Ok(valid_body) => {
                 let headers = HeaderMap::borrow_from(&state);
-                let conf = &*config::SYSTEM_CONFIG;
+                let conf = &config::SYSTEM_CONFIG;
                 let secret = &conf.line_chat.secret;
                 let should_verify_linechat_secret = &conf.debug.should_verify_linechat_secret;
                 let bytes = body::Chunk::into_bytes(valid_body);

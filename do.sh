@@ -15,7 +15,7 @@ if [ $# -ne 0  ]; then
         elif [ "$flag" == "build_ci" ]; then
                 (set -x; cargo build --verbose)
         elif [ "$flag" == "redis" ]; then
-                (set -x; docker run --name redis-gyromone -d "redis:6.0.5")
+                (set -x; docker run  -p 6379:6379 --name redis-gyromone -d "redis:6.0.5")
         elif [ "$flag" == "redis-cli" ]; then
                 (set -x; docker exec -it redis-gyromone redis-cli)
         elif [ "$flag" == "dummy" ]; then

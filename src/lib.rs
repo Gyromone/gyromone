@@ -14,6 +14,7 @@ extern crate sha2;
 extern crate slog_term;
 
 use log::Logger;
+use storage::redis;
 
 mod common;
 pub mod config;
@@ -22,9 +23,12 @@ mod external;
 mod log;
 mod response;
 pub mod routes;
+mod storage;
 
 pub fn run_server(addr: String) {
+    let redis = redis::Redis::new();
     let conf = &*config::SYSTEM_CONFIG;
+
     let logger = Logger::new();
     let local_logger = logger.source_logger.new(o!("func" => "main"));
 
