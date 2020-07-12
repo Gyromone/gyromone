@@ -1,11 +1,13 @@
+use crate::common::map_dumming_error;
 use crate::config;
 use crate::log::Logger;
 
-use redis::{Client, Connection, IntoConnectionInfo};
+use r2d2::Pool;
+use redis::{Client, IntoConnectionInfo};
 use slog;
 
 pub struct Redis {
-    client: Client,
+    pub pool: Pool<Client>,
 }
 
 impl Redis {
@@ -19,15 +21,21 @@ impl Redis {
         match redis_uri
             .clone()
             .into_connection_info()
-            .and_then(|info| Client::open(info))
-        {
-            Ok(client) => {
+            .map_err(map_dumming_error)
+            .and_then(|info| Client::open(info).map_err(map_dumming_error))
+            .and_then(|client| {
+                Pool::builder()
+                    .max_size(15)
+                    .build(client)
+                    .map_err(map_dumming_error)
+            }) {
+            Ok(pool) => {
                 slog::info!(
                     local_logger,
-                    "{}", "new connection";
+                    "{}", "new connection pool";
                 );
 
-                Redis { client: client }
+                Redis { pool: pool }
             }
             Err(e) => {
                 slog::error!(

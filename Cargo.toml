@@ -22,4 +22,5 @@ hyper = "^0.12"
 hyper-tls = "^0.3"
 futures = "^0.1"
 mime = "^0.3"
-redis = "0.16.0"
+redis = { version = "^0.16.0", features = ["r2d2"] }
+r2d2 = "^0.8"
