@@ -1,6 +1,7 @@
 use crate::storage::redis_cli;
 
 use redis::Commands;
+use redis::FromRedisValue;
 
 pub struct Queue {
     pub redis: redis_cli::Redis,
@@ -18,15 +19,20 @@ impl Queue {
         let _: () = conn.rpush(key, value).unwrap();
     }
 
-    pub fn pop(&self, key: &'static str) -> Option<String> {
+    pub fn pop<T>(&self, key: &'static str) -> Option<T>
+    where
+        T: FromRedisValue + Clone,
+    {
         let mut conn = self.redis.pool.get().unwrap();
-        match conn
-            .blpop::<&str, Vec<String>>(key, POP_TIMEOUT as usize)
+        let value = match conn
+            .blpop::<&str, Vec<T>>(key, POP_TIMEOUT as usize)
             .unwrap()
             .as_slice()
         {
-            [_, v] => Some(v.clone()),
-            _ => None,
-        }
+            [_, v] => v.clone(),
+            _ => return None,
+        };
+
+        return Some(value);
     }
 }

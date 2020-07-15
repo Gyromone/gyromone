@@ -35,11 +35,11 @@ pub fn run_server(addr: String) {
     let queue = Queue::new(_redis);
     queue.push("queue:test1", "I'm a message".to_string());
 
-    match queue.pop("queue:test1") {
+    match queue.pop::<String>("queue:test1") {
         Some(v) => println!("queue value 1 {}", v),
         None => println!("queue value 1, no value"),
     }
-    match queue.pop("queue:test1") {
+    match queue.pop::<String>("queue:test1") {
         Some(v) => println!("queue value 2 {}", v),
         None => println!("queue value 2, no value"),
     };
