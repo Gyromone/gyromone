@@ -14,9 +14,8 @@ extern crate r2d2;
 extern crate sha2;
 extern crate slog_term;
 
-use crate::redis::Commands;
-
 use log::Logger;
+use storage::queue::Queue;
 use storage::redis_cli;
 
 mod common;
@@ -32,15 +31,19 @@ pub fn run_server(addr: String) {
     let _redis = redis_cli::Redis::new();
     let conf = &*config::SYSTEM_CONFIG;
 
-    // try redis
-    let mut conn = _redis.pool.get().unwrap();
-    let _: () = conn.set("my_key", 42).unwrap();
-    // read back the key and return it.  Because the return value
-    // from the function is a result for integer this will automatically
-    // convert into one.
-    let value: isize = conn.get("my_key").unwrap();
-    println!("reids value: {}", value);
-    // try redis end
+    // try queue start
+    let queue = Queue::new(_redis);
+    queue.push("queue:test1", "I'm a message".to_string());
+
+    match queue.pop("queue:test1") {
+        Some(v) => println!("queue value 1 {}", v),
+        None => println!("queue value 1, no value"),
+    }
+    match queue.pop("queue:test1") {
+        Some(v) => println!("queue value 2 {}", v),
+        None => println!("queue value 2, no value"),
+    };
+    // try queue end
 
     let logger = Logger::new();
     let local_logger = logger.source_logger.new(o!("func" => "main"));
