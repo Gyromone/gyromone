@@ -1,7 +1,6 @@
 use crate::storage::redis_cli;
 
-use redis::Commands;
-use redis::FromRedisValue;
+use redis::{Commands, FromRedisValue, ToRedisArgs};
 
 pub struct Queue {
     pub redis: redis_cli::Redis,
@@ -14,7 +13,10 @@ impl Queue {
         Queue { redis: redis }
     }
 
-    pub fn push(&self, key: &'static str, value: String) {
+    pub fn push<T>(&self, key: &'static str, value: T)
+    where
+        T: ToRedisArgs,
+    {
         let mut conn = self.redis.pool.get().unwrap();
         let _: () = conn.rpush(key, value).unwrap();
     }
