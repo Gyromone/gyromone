@@ -19,6 +19,9 @@ use storage::queue::Queue;
 use storage::redis_cli;
 use threadpool::ThreadPool;
 
+use std::thread::sleep;
+use std::time::Duration;
+
 mod common;
 pub mod config;
 mod constants;
@@ -50,7 +53,10 @@ pub fn run_server(addr: String) {
     // try threadpool start
     let pool = ThreadPool::new(5);
     for i in 1..11 {
-        pool.execute(move || println!("do {}", i));
+        pool.execute(move || {
+            sleep(Duration::from_secs(3));
+            println!("do {}", i);
+        });
     }
     // try threadpool end
 
