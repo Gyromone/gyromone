@@ -17,6 +17,7 @@ extern crate slog_term;
 use log::Logger;
 use storage::queue::Queue;
 use storage::redis_cli;
+use threadpool::ThreadPool;
 
 mod common;
 pub mod config;
@@ -26,6 +27,7 @@ mod log;
 mod response;
 pub mod routes;
 mod storage;
+mod threadpool;
 
 pub fn run_server(addr: String) {
     let _redis = redis_cli::Redis::new();
@@ -44,6 +46,13 @@ pub fn run_server(addr: String) {
         None => println!("queue value 2, no value"),
     };
     // try queue end
+
+    // try threadpool start
+    let pool = ThreadPool::new(5);
+    for i in 1..11 {
+        pool.execute(move || println!("do {}", i));
+    }
+    // try threadpool end
 
     let logger = Logger::new();
     let local_logger = logger.source_logger.new(o!("func" => "main"));
