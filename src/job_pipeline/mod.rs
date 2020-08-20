@@ -1,12 +1,20 @@
 pub mod handlers;
 
+use std::sync::mpsc::channel;
+use std::thread;
+use std::time::Duration;
+
 use crate::storage::queue::Queue;
 use crate::threadpool::ThreadPool;
+
+const PIPE_THREAD_SIZE: usize = 5;
+
+type PipeHandler<PL> = Box<dyn Fn(PL) + Sync + 'static>;
 
 pub struct Pipe<'q, PL> {
     topic: &'static str,
     queue: &'q Queue,
-    handler: Box<dyn Fn(PL) + Sync + 'static>,
+    handler: PipeHandler<PL>,
 }
 
 impl<'q, PL> Pipe<'q, PL>
@@ -27,6 +35,26 @@ where
 
         (*self.handler)(payload)
     }
+
+    pub fn subscribe(&self) {
+        let pool = ThreadPool::new(PIPE_THREAD_SIZE);
+
+        for i in 0..PIPE_THREAD_SIZE {
+            pool.execute(|| loop {
+                self.pop();
+                println!("execute");
+                thread::sleep(Duration::from_millis(200));
+            });
+        }
+    }
+
+    pub fn new(topic: &'static str, queue: &'q Queue, handler: PipeHandler<PL>) -> Self {
+        Pipe {
+            topic: topic,
+            queue: queue,
+            handler: handler,
+        }
+    }
 }
 
 pub struct Center<'p, PL> {
@@ -40,12 +68,7 @@ where
 {
     pub fn new(pipes: Vec<Pipe<'p, PL>>, q: &'p Queue) -> &'p Self {
         for pipe in pipes.iter() {
-            let pool = ThreadPool::new(5);
-            loop {
-                pool.execute(|| {
-                    pipe.pop();
-                });
-            }
+            pipe.subscribe()
         }
 
         &Center {
