@@ -41,7 +41,7 @@ where
 
         for i in 0..PIPE_THREAD_SIZE {
             pool.execute(|| loop {
-                self.pop();
+                //self.pop();
                 println!("execute");
                 thread::sleep(Duration::from_millis(200));
             });
@@ -66,12 +66,12 @@ impl<'p, PL> Center<'p, PL>
 where
     PL: serde::de::DeserializeOwned,
 {
-    pub fn new(pipes: Vec<Pipe<'p, PL>>, q: &'p Queue) -> &'p Self {
+    pub fn new(pipes: Vec<Pipe<'p, PL>>, q: &'p Queue) -> Self {
         for pipe in pipes.iter() {
             pipe.subscribe()
         }
 
-        &Center {
+        Center {
             pipes: pipes,
             queue: q,
         }
