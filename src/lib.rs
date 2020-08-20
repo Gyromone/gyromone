@@ -14,9 +14,11 @@ extern crate r2d2;
 extern crate sha2;
 extern crate slog_term;
 
+use std::sync::Arc;
 use std::thread::sleep;
 use std::time::Duration;
 
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 use job_pipeline::{Center, Pipe};
@@ -63,14 +65,20 @@ pub fn run_server(addr: String) {
         });
     }
     // try threadpool end
-    #[derive(Serialize, Deserialize)]
-    struct TestPL {};
-    let pipe = Pipe {
-        topic: "test:topic",
-        queue: &queue,
-        handler: Box::new(|a: TestPL| println!("handle!")),
+    #[derive(Serialize, Debug)]
+    struct TestPL {
+        text: &'static str,
     };
-    let center = Center::new(vec![pipe], &queue);
+    let pipe = Pipe::new(
+        "test:topic",
+        Arc::new(queue),
+        Arc::new(Box::new(|pl: TestPL| println!("deal with: {:?}", pl))),
+    );
+
+    Center::new(vec![&pipe]);
+    let value = TestPL { text: "foobar" };
+
+    pipe.push(value);
 
     let logger = Logger::new();
     let local_logger = logger.source_logger.new(o!("func" => "main"));
